@@ -1,61 +1,49 @@
-let stopwatchInterval;
-let startTime;
-let elapsedTime = 0;
-let isRunning = false;
-let lapCount = 1;
+let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
+let timeRef = document.querySelector(".timer-display");
+let int = null;
 
-function startStopwatch() {
-    if (!isRunning) {
-        startTime = Date.now() - elapsedTime;
-        stopwatchInterval = setInterval(updateTimeDisplay, 10);
-        isRunning = true;
+document.getElementById("start-timer").addEventListener("click", () => {
+    if(int !== null) {
+        clearInterval(int);
     }
-}
+    int = setInterval(displayTimer, 10);
+});
 
-function pauseStopwatch() {
-    if (isRunning) {
-        clearInterval(stopwatchInterval);
-        isRunning = false;
+document.getElementById("pause-timer").addEventListener("click", () => {
+    clearInterval(int);
+});
+
+document.getElementById("reset-timer").addEventListener("click", () => {
+    clearInterval(int);
+    [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
+    timeRef.innerHTML = "00 : 00 : 00 : 000 ";
+}); 
+
+function displayTimer() {
+    milliseconds += 10;
+    if(milliseconds == 1000) {
+        milliseconds = 0;
+        seconds++;
+        if(seconds == 60) {
+            seconds = 0;
+            minutes++;
+            if(minutes == 60) {
+                minutes = 0;
+                hours++;
+            }
+        }
     }
-}
 
-function resetStopwatch() {
-    clearInterval(stopwatchInterval);
-    elapsedTime = 0;
-    updateTimeDisplay();
-    lapCount = 1;
-    clearLapTimes();
-    isRunning = false;
-}
+    let h = hours < 10 ? "0" + hours : hours;
+    let m = minutes < 10 ? "0" + minutes : minutes;
+    let s = seconds < 10 ? "0" + seconds : seconds;
+    let ms = 
+        milliseconds < 10
+        ? "00" + milliseconds
+        : milliseconds < 100
+        ? "0" + milliseconds
+        : milliseconds;
 
-function updateTimeDisplay() {
-    const currentTime = Date.now();
-    elapsedTime = currentTime - startTime;
-    const formattedTime = formatTime(elapsedTime);
-    document.getElementById('time').innerText = formattedTime;
-}
+    timeRef.innerHTML = `${h} : ${m} : ${s} : ${ms}`;
 
-function formatTime(time) {
-    const milliseconds = Math.floor(time % 1000 / 10);
-    const seconds = Math.floor(time / 1000 % 60);
-    const minutes = Math.floor(time / (1000 * 60) % 60);
-    return `${formatTimeUnit(minutes)}:${formatTimeUnit(seconds)}:${formatTimeUnit(milliseconds)}`;
-}
-
-function formatTimeUnit(unit) {
-    return unit < 10 ? `0${unit}` : unit;
-}
-
-function recordLap() {
-    if (isRunning) {
-        const lapTime = formatTime(elapsedTime);
-        const lapItem = document.createElement('li');
-        lapItem.innerText = `Lap ${lapCount}: ${lapTime}`;
-        document.getElementById('lap-times').appendChild(lapItem);
-        lapCount++;
-    }
-}
-
-function clearLapTimes() {
-    document.getElementById('lap-times').innerHTML = '';
 }
